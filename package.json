@@ -1,0 +1,27 @@
+{
+  "name": "new",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "main": "src/main/index.js",
+  "dependencies": {
+    "@material-ui/core": "1.5.0",
+    "@material-ui/icons": "2.0.3",
+    "history": "4.7.2",
+    "ipfs": "0.31.6",
+    "mnid": "0.1.1",
+    "prop-types": "15.6.2",
+    "react": "16.3.2",
+    "react-dom": "16.3.2",
+    "react-router": "^4.3.1",
+    "react-scripts": "1.1.4",
+    "uport-connect": "0.7.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
