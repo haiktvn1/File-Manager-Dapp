@@ -128,11 +128,10 @@ class App extends React.Component {
             ipfsHash[0].hash,
             file.name,
           (err, txHash) => {
-            console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", err, "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", txHash);
+            console.log(err, txHash);
             if (err) {
               return;
             }
-            console.log("hackhackhachkkhackhakchachkachkach");
 
             this.setState({ is_loading: true });
 
@@ -148,7 +147,7 @@ class App extends React.Component {
 
                 this.loadSpaceFromSmartContract();
 
-                console.log("haideptraiaasdasdasdasdasd", txResponse);
+                console.log(txResponse);
               })
               .catch(err => this.setState({ is_loading: false }));
           }
