@@ -21,12 +21,7 @@ class App extends React.Component {
   state = {
     open_dialog_buy: false,
     is_loading: false,
-    user_profile: {
-      avatar: {
-        uri:
-          "https://www.esparkinfo.com/wp-content/uploads/2016/08/default-avatar.png"
-      }
-    },
+    user_profile: null,
     used_space: 0,
     total_size: 0,
     listFile: [],
@@ -48,6 +43,10 @@ class App extends React.Component {
     if (!user_profile) {
       browserHistory.replace("/");
     } else {
+        if(user_profile.avatar == null)
+            {
+                user_profile.avatar = "https://www.esparkinfo.com/wp-content/uploads/2016/08/default-avatar.png";
+            }
       this.setState({ user_profile }, () => {
         this.loadSpaceFromSmartContract();
         this.loadFiles();
