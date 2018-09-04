@@ -21,10 +21,6 @@
 			{
 				"name": "result",
 				"type": "string"
-			},
-			{
-				"name": "proof",
-				"type": "bytes"
 			}
 		],
 		"name": "__callback",
@@ -43,6 +39,10 @@
 			{
 				"name": "result",
 				"type": "string"
+			},
+			{
+				"name": "proof",
+				"type": "bytes"
 			}
 		],
 		"name": "__callback",
@@ -50,6 +50,18 @@
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "getPricePer1Gb",
+				"type": "uint256"
+			}
+		],
+		"name": "logPriceUpdated",
+		"type": "event"
 	},
 	{
 		"constant": false,
@@ -78,18 +90,6 @@
 		"type": "event"
 	},
 	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "getPricePer1Gb",
-				"type": "uint256"
-			}
-		],
-		"name": "logPriceUpdated",
-		"type": "event"
-	},
-	{
 		"constant": false,
 		"inputs": [
 			{
@@ -102,12 +102,6 @@
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
-	},
-	{
-		"inputs": [],
-		"payable": true,
-		"stateMutability": "payable",
-		"type": "constructor"
 	},
 	{
 		"constant": false,
@@ -143,11 +137,17 @@
 	{
 		"constant": false,
 		"inputs": [],
-		"name": "withdrawal",
+		"name": "withdrawa",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "constructor"
 	},
 	{
 		"constant": true,
@@ -195,6 +195,20 @@
 			{
 				"name": "list_hash",
 				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getOwnerAddress",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
 			}
 		],
 		"payable": false,

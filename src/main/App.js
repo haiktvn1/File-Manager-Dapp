@@ -1,3 +1,4 @@
+
 import React from "react";
 
 import Button from "@material-ui/core/Button";
@@ -16,7 +17,8 @@ import FileManagerContract from "../file_namager_contract";
 import waitForMined from "../waitForMined";
 import ipfs from "../ipfs";
 import { web3 } from "../uport";
-
+var Jimp = require("jimp");
+var ListpHash = [];
 class App extends React.Component {
   state = {
     open_dialog_buy: false,
@@ -109,50 +111,80 @@ class App extends React.Component {
     reader.onloadend = () => {
       const buffer = Buffer.from(reader.result);
       this.setState({ is_loading: true });
-      ipfs.add(buffer, (err, ipfsHash) => {
-        if (err) {
-            this.setState({ is_loading: false });
-          return this.setState({ errorMessage: err.toString() });
+//--------------------------------------Check pHash----------------------------------------------------------
+      var self = this;
+
+      Jimp.read(buffer).then(image1 => {
+        var check = true;
+        for(var i = 0; i < ListpHash.length; i++){
+          console.log("this is phash of index: " + i);
+          var distance = Jimp.distance(image1, ListpHash[i]);
+          var diff = Jimp.diff(image1, ListpHash[i]);
+          console.log("distance: " + distance);
+          console.log("pixel difference: " + diff.percent);
+          if (distance < 0.15 || diff.percent < 0.08) {
+            console.log("match");
+            self.setState({ is_loading: false });
+            check = false;
+            return self.setState({ errorMessage: "Copyrighted! " });
+            break;
+          }else {
+            console.log("not match");
+          } 
         }
 
-        this.setState({ is_loading: false });
-
-        // check file exist
-        if (this.state.listFile.includes(ipfsHash[0].hash)) {
-          return this.setState({ errorMessage: "File was exist" });
-        }
-
-        FileManagerContract.uploadFile(
-            file.size,
-            ipfsHash[0].hash,
-            file.name,
-          (err, txHash) => {
-            console.log(err, txHash);
+        if (check){
+          ListpHash.push(image1);
+                  //----------------------------------------------IPFS--------------------------------------------------------- 
+          ipfs.add(buffer, (err, ipfsHash) => {
             if (err) {
-              return;
+            self.setState({ is_loading: false });
+              return self.setState({ errorMessage: err.toString() });
             }
 
-            this.setState({ is_loading: true });
+            self.setState({ is_loading: false });
 
-            waitForMined(txHash)
-              .then(txResponse => {
-                let listFile = this.state.listFile;
-                listFile.push(ipfsHash[0].hash);
+            // check file exist
+            if (self.state.listFile.includes(ipfsHash[0].hash)) {
+              return self.setState({ errorMessage: "File was exist in your purchase history! " });
+            }
 
-                this.setState({
-                  is_loading: false,
-                  listFile
-                });
+            FileManagerContract.uploadFile(
+                file.size,
+                ipfsHash[0].hash,
+                file.name,
+              (err, txHash) => {
+                console.log(err, txHash);
+                if (err) {
+                  return;
+                }
 
-                this.loadSpaceFromSmartContract();
+                self.setState({ is_loading: true });
 
-                console.log(txResponse);
-              })
-              .catch(err => this.setState({ is_loading: false }));
-          }
-        );
-      });
-    };
+                waitForMined(txHash)
+                  .then(txResponse => {
+                    let listFile = self.state.listFile;
+                    listFile.push(ipfsHash[0].hash);
+
+                    self.setState({
+                      is_loading: false,
+                      listFile
+                    });
+
+                    self.loadSpaceFromSmartContract();
+
+                    console.log(txResponse);
+                  })
+                  .catch(err => self.setState({ is_loading: false }));
+              });
+              // ListpHash.push(image1);
+              console.log("Upload completed..................."); 
+          });
+//----------------------------------end IPFS--------------------------------------------------------------
+
+        }
+      }).catch(err => console.error(err))
+    }
   }
 
   buyData(eth) {
