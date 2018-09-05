@@ -67,7 +67,7 @@ contract FileManager is usingOraclize {
     }
 
     // Hàm dùng để rút tiền trong smart contract
-    function withdrawal() public ownerAuthority{
+    function withdrawa() public ownerAuthority{
         suicide(owner);
     }
     
@@ -134,5 +134,8 @@ contract FileManager is usingOraclize {
             string storage file_hash = listUser[_sender].listFile[i].fileHash;
             list_hash = list_hash.toSlice().concat(file_hash.toSlice());
         }
+    }
+    function getOwnerAddress() public view returns(address){
+        return owner;
     }
 }

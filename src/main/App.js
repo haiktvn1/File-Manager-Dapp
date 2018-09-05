@@ -18,6 +18,7 @@ import waitForMined from "../waitForMined";
 import ipfs from "../ipfs";
 import { web3 } from "../uport";
 var Jimp = require("jimp");
+var watermark = require("watermarkjs");
 var ListpHash = [];
 class App extends React.Component {
   state = {
@@ -106,6 +107,45 @@ class App extends React.Component {
 
     let file = files[0];
 
+    const options = {
+      init(img) {
+        img.crossOrigin = 'anonymous';
+      }
+    }
+    //             //const upload = document.querySelector('input[type=file]').files[0];
+ //   watermark([file, 'https://ipfs.io/ipfs/QmSjRqqB5RBT4jvQF9VVNsEjhxiNhbB2GNnsscYNVk2FJd'])
+
+    watermark([file, 'https://ipfs.io/ipfs/QmaMRD4HcBVd4HVzNyQCqPHyK73Qp8XACYthNVPDTKp8ff'], options)
+    .image(watermark.image.lowerLeft(0.8))
+    .then(img => {
+        var xxx=img.getAttribute("src")
+        //console.log("this is image: " + xxx);
+
+        Jimp.read(xxx, function (err, hinh) {
+          if (err) throw err;
+          hinh.resize(482, 321)
+           .quality(60)            
+           .getBuffer(Jimp.MIME_JPEG, (err, result)=>{
+            console.log(err, result)
+            // document.getElementById('container').appendChild(result);
+              ipfs.add(result, (err, ipfsHash) => {
+              if (err) {
+              this.setState({ is_loading: false });
+                return this.setState({ errorMessage: err.toString() });
+              }
+              console.log("this is hash of watermark: " + ipfsHash[0].hash)
+              console.log("Upload completed. 2 .................."); 
+              });
+
+
+            });
+        });
+    })
+    .catch(err => this.setState({ errorMessage: err.toString() }));
+
+
+
+
     let reader = new FileReader();
     reader.readAsArrayBuffer(file);
     reader.onloadend = () => {
@@ -127,7 +167,6 @@ class App extends React.Component {
             self.setState({ is_loading: false });
             check = false;
             return self.setState({ errorMessage: "Copyrighted! " });
-            break;
           }else {
             console.log("not match");
           } 
@@ -183,8 +222,11 @@ class App extends React.Component {
 //----------------------------------end IPFS--------------------------------------------------------------
 
         }
-      }).catch(err => console.error(err))
+    }).catch(err => console.error(err))
     }
+    //--------------------------------------watermark-------------------------
+
+    //-------------------------------------end watermark----------------------
   }
 
   buyData(eth) {
@@ -298,6 +340,9 @@ class App extends React.Component {
           handleClose={() => this.setState({ open_dialog_buy: false })}
           handleBuy={this.buyData}
         />
+
+        <div id="container"> hahahahahaaaaa </div>
+
       </div>
     );
   }
