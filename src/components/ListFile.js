@@ -17,8 +17,7 @@ export default class ListFile extends Component {
       <List component="nav">
         {this.props.listFile.map(file => (
           <ListItem key={file} button>
-            <ListItemIcon onClick={() => this.openLink(file)}>
-              <CloudDownload />
+            <ListItemIcon onClick={() => this.openLink(file)}><CloudDownload />
             </ListItemIcon>
             <ListItemText primary={file} />
           </ListItem>

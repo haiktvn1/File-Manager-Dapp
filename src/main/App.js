@@ -17,6 +17,7 @@ import FileManagerContract from "../file_namager_contract";
 import waitForMined from "../waitForMined";
 import ipfs from "../ipfs";
 import { web3 } from "../uport";
+import { watermarkImage } from "../watermark"
 var Jimp = require("jimp");
 var watermark = require("watermarkjs");
 var ListpHash = [];
@@ -104,130 +105,82 @@ class App extends React.Component {
     if (files.length <= 0) {
       return;
     }
-
     let file = files[0];
 
-    const options = {
-      init(img) {
-        img.crossOrigin = 'anonymous';
-      }
-    }
-    //             //const upload = document.querySelector('input[type=file]').files[0];
- //   watermark([file, 'https://ipfs.io/ipfs/QmSjRqqB5RBT4jvQF9VVNsEjhxiNhbB2GNnsscYNVk2FJd'])
-
-    watermark([file, 'https://ipfs.io/ipfs/QmaMRD4HcBVd4HVzNyQCqPHyK73Qp8XACYthNVPDTKp8ff'], options)
-    .image(watermark.image.lowerLeft(0.8))
-    .then(img => {
-        var xxx=img.getAttribute("src")
-        //console.log("this is image: " + xxx);
-
-        Jimp.read(xxx, function (err, hinh) {
-          if (err) throw err;
-          hinh.resize(482, 321)
-           .quality(60)            
-           .getBuffer(Jimp.MIME_JPEG, (err, result)=>{
-            console.log(err, result)
-            // document.getElementById('container').appendChild(result);
-              ipfs.add(result, (err, ipfsHash) => {
-              if (err) {
-              this.setState({ is_loading: false });
-                return this.setState({ errorMessage: err.toString() });
-              }
-              console.log("this is hash of watermark: " + ipfsHash[0].hash)
-              console.log("Upload completed. 2 .................."); 
-              });
-
-
-            });
-        });
-    })
-    .catch(err => this.setState({ errorMessage: err.toString() }));
-
-
-
-
+//---------------------------------------------------------watermark----------------------------------------------
+    var linkhash = watermarkImage(file, 'https://ipfs.io/ipfs/Qmck5a3WNVvKkg7fdhthN1gjTApmDsCFmxusv2N61hbVYx')
+//---------------------------------------
     let reader = new FileReader();
     reader.readAsArrayBuffer(file);
     reader.onloadend = () => {
       const buffer = Buffer.from(reader.result);
       this.setState({ is_loading: true });
-//--------------------------------------Check pHash----------------------------------------------------------
-      var self = this;
+//---------------------------------------------------------check pHash-------------------------------------------------
+    var self = this;
 
-      Jimp.read(buffer).then(image1 => {
+    Jimp.read(buffer).then(image1 => {
         var check = true;
         for(var i = 0; i < ListpHash.length; i++){
-          console.log("this is phash of index: " + i);
-          var distance = Jimp.distance(image1, ListpHash[i]);
-          var diff = Jimp.diff(image1, ListpHash[i]);
-          console.log("distance: " + distance);
-          console.log("pixel difference: " + diff.percent);
-          if (distance < 0.15 || diff.percent < 0.08) {
-            console.log("match");
-            self.setState({ is_loading: false });
-            check = false;
-            return self.setState({ errorMessage: "Copyrighted! " });
-          }else {
-            console.log("not match");
-          } 
+            console.log("this is phash of index: " + i);
+            var distance = Jimp.distance(image1, ListpHash[i]);
+            var diff = Jimp.diff(image1, ListpHash[i]);
+            console.log("distance: " + distance);
+            console.log("pixel difference: " + diff.percent);
+            if (distance < 0.15 || diff.percent < 0.08) {
+                console.log("match");
+                self.setState({ is_loading: false });
+                check = false;
+                return self.setState({ errorMessage: "Copyrighted! " });
+            }else {
+                console.log("not match");
+            } 
         }
-
-        if (check){
-          ListpHash.push(image1);
-                  //----------------------------------------------IPFS--------------------------------------------------------- 
-          ipfs.add(buffer, (err, ipfsHash) => {
+//-----------------------------------------------------end check pHash-------------------------------------------------
+    if (check){
+        ListpHash.push(image1);
+//-----------------------------------------------------IPFS--------------------------------------------------------- 
+        ipfs.add(buffer, (err, ipfsHash) => {
             if (err) {
             self.setState({ is_loading: false });
-              return self.setState({ errorMessage: err.toString() });
+                return self.setState({ errorMessage: err.toString() });
             }
-
             self.setState({ is_loading: false });
-
             // check file exist
             if (self.state.listFile.includes(ipfsHash[0].hash)) {
               return self.setState({ errorMessage: "File was exist in your purchase history! " });
             }
-
             FileManagerContract.uploadFile(
                 file.size,
                 ipfsHash[0].hash,
                 file.name,
-              (err, txHash) => {
-                console.log(err, txHash);
-                if (err) {
-                  return;
-                }
-
+                (err, txHash) => {
+                    console.log(err, txHash);
+                    if (err) {
+                        return;
+                    }
                 self.setState({ is_loading: true });
-
                 waitForMined(txHash)
-                  .then(txResponse => {
+                .then(txResponse => {
                     let listFile = self.state.listFile;
                     listFile.push(ipfsHash[0].hash);
-
                     self.setState({
-                      is_loading: false,
-                      listFile
+                        is_loading: false,
+                        listFile
                     });
-
                     self.loadSpaceFromSmartContract();
-
                     console.log(txResponse);
-                  })
-                  .catch(err => self.setState({ is_loading: false }));
-              });
-              // ListpHash.push(image1);
-              console.log("Upload completed..................."); 
-          });
-//----------------------------------end IPFS--------------------------------------------------------------
+                    })
+                .catch(err => self.setState({ is_loading: false }));
+                });
+                // ListpHash.push(image1);
+                console.log("Upload completed..................."); 
+        });
+//-----------------------------------------------end IPFS--------------------------------------------------------------
 
-        }
+    }
     }).catch(err => console.error(err))
     }
-    //--------------------------------------watermark-------------------------
-
-    //-------------------------------------end watermark----------------------
-  }
+}
 
   buyData(eth) {
     let value = web3.toWei(eth, "ether");

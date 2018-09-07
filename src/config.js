@@ -2,7 +2,7 @@ var abiTemp = require("./ABI.json")
 var config = {
   uportAppName: "Filemanager",
   contract: { // thay address và ABI của smart contract tại đây
-    address: "0x90ca84ba74bcade1f34696e41a44f72ce365de69",
+    address: "0xe6fd4bd792e79c51802c7c5b767c9ccf56cd5423",
     abi: abiTemp, // thay ABI của smart contract
   },
   uport: { // thay bằng các thông số mà uport cung cấp tại đây
